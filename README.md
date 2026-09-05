@@ -73,7 +73,7 @@ OPENAI_MODEL="gpt-4o-mini"
 
 ```bash
 # 1. Clone repo & navigate into directory
-cd ReclaimIQ
+cd RecoverAI
 
 # 2. Install dependencies
 npm install
