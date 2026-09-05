@@ -1,0 +1,157 @@
+// Prisma schema for RecoverAI
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "sqlite"
+  url      = env("DATABASE_URL")
+}
+
+model Customer {
+  id           String         @id @default(uuid())
+  externalId   String?        @unique
+  name         String
+  email        String
+  phone        String?
+  totalSpent   Float          @default(0)
+  ordersCount  Int            @default(0)
+  trustScore   Int            @default(80)
+  createdAt    DateTime       @default(now())
+  updatedAt    DateTime       @updatedAt
+  orders       Order[]
+  payments     Payment[]
+  recoveryCases RecoveryCase[]
+}
+
+model Order {
+  id           String         @id @default(uuid())
+  orderNumber  String         @unique
+  totalAmount  Float
+  currency     String         @default("INR")
+  status       String         @default("UNPAID")
+  customerId   String
+  customer     Customer       @relation(fields: [customerId], references: [id])
+  createdAt    DateTime       @default(now())
+  updatedAt    DateTime       @updatedAt
+  payments     Payment[]
+  recoveryCases RecoveryCase[]
+}
+
+model Payment {
+  id                String        @id @default(uuid())
+  paymentId         String        @unique
+  orderId           String
+  order             Order         @relation(fields: [orderId], references: [id])
+  customerId        String
+  customer          Customer      @relation(fields: [customerId], references: [id])
+  amount            Float
+  currency          String        @default("INR")
+  status            String        @default("FAILED")
+  paymentMethod     String        @default("UPI")
+  failureReason     String?
+  failureCategory   String        @default("TEMPORARY_FAILURE")
+  razorpayPaymentId String?
+  createdAt         DateTime      @default(now())
+  updatedAt         DateTime      @updatedAt
+  recoveryCase      RecoveryCase?
+}
+
+model RecoveryCase {
+  id               String          @id @default(uuid())
+  caseNumber       String          @unique
+  paymentId        String          @unique
+  payment          Payment         @relation(fields: [paymentId], references: [id])
+  orderId          String
+  order            Order           @relation(fields: [orderId], references: [id])
+  customerId       String
+  customer         Customer        @relation(fields: [customerId], references: [id])
+  amount           Float
+  status           String          @default("DETECTED")
+  recoveryScore    Int             @default(50)
+  recoverability   Float           @default(0.5)
+  expectedRevenue  Float           @default(0)
+  policyDecision   String?
+  policyReason     String?
+  escalationReason String?
+  retryCount       Int             @default(0)
+  createdAt        DateTime        @default(now())
+  updatedAt        DateTime        @updatedAt
+  decision         AgentDecision?
+  actions          RecoveryAction[]
+  auditEvents      AuditEvent[]
+  escalation       Escalation?
+
+  @@index([customerId])
+  @@index([status])
+  @@index([createdAt])
+}
+
+model AgentDecision {
+  id                String       @id @default(uuid())
+  caseId            String       @unique
+  case              RecoveryCase @relation(fields: [caseId], references: [id], onDelete: Cascade)
+  diagnosis         String
+  riskLevel         String       @default("medium")
+  recoverability    Float        @default(0.5)
+  recommendedAction String
+  reason            String
+  confidence        Float        @default(0.85)
+  promptTokens      Int?
+  createdAt         DateTime     @default(now())
+}
+
+model RecoveryAction {
+  id              String       @id @default(uuid())
+  caseId          String
+  case            RecoveryCase @relation(fields: [caseId], references: [id], onDelete: Cascade)
+  actionType      String
+  razorpayLinkId  String?
+  razorpayLinkUrl String?
+  status          String       @default("EXECUTED")
+  resultPayload   String?
+  createdAt       DateTime     @default(now())
+
+  @@index([caseId])
+}
+
+model AuditEvent {
+  id        String        @id @default(uuid())
+  caseId    String?
+  case      RecoveryCase? @relation(fields: [caseId], references: [id], onDelete: SetNull)
+  timestamp DateTime      @default(now())
+  event     String
+  actor     String        @default("SYSTEM")
+  details   String?
+  createdAt DateTime      @default(now())
+
+  @@index([caseId])
+  @@index([timestamp])
+  @@index([actor])
+}
+
+model WebhookEvent {
+  id        String   @id @default(uuid())
+  eventId   String   @unique
+  eventType String
+  payload   String
+  processed Boolean  @default(false)
+  createdAt DateTime @default(now())
+}
+
+model Escalation {
+  id                    String       @id @default(uuid())
+  caseId                String       @unique
+  case                  RecoveryCase @relation(fields: [caseId], references: [id], onDelete: Cascade)
+  reason                String
+  agentStoppingRule     String
+  recommendedHumanAction String
+  status                String       @default("PENDING")
+  resolvedBy            String?
+  resolvedAt            DateTime?
+  createdAt             DateTime     @default(now())
+  updatedAt             DateTime     @updatedAt
+
+  @@index([status])
+}
