@@ -159,6 +159,21 @@ export default function DashboardPage() {
     blockedCases: 1,
   };
 
+  const chartTimeSeries = analytics?.timeSeriesData?.length ? analytics.timeSeriesData : [
+    { time: "Mon", atRisk: 5000, recovered: 1000 },
+    { time: "Tue", atRisk: 9500, recovered: 3500 },
+    { time: "Wed", atRisk: 14000, recovered: 6800 },
+    { time: "Thu", atRisk: 17500, recovered: 9200 },
+    { time: "Fri", atRisk: 18750, recovered: 11250 },
+  ];
+
+  const chartFailureTypes = analytics?.recoveryByFailureType?.length ? analytics.recoveryByFailureType : [
+    { category: "Timeout", recoveryRate: 85 },
+    { category: "Auth Failed", recoveryRate: 62 },
+    { category: "Ins. Funds", recoveryRate: 38 },
+    { category: "Fraud Risk", recoveryRate: 12 },
+  ];
+
   return (
     <div className="space-y-6 pb-12">
       {/* Page Title Header */}
@@ -264,7 +279,7 @@ export default function DashboardPage() {
 
           <div className="h-64 w-full">
             <ResponsiveContainer width="100%" height="100%">
-              <AreaChart data={analytics?.timeSeriesData || []}>
+              <AreaChart data={chartTimeSeries}>
                 <defs>
                   <linearGradient id="colorRisk" x1="0" y1="0" x2="0" y2="1">
                     <stop offset="5%" stopColor="#F59E0B" stopOpacity={0.3} />
@@ -315,7 +330,7 @@ export default function DashboardPage() {
 
           <div className="h-64 w-full">
             <ResponsiveContainer width="100%" height="100%">
-              <BarChart data={analytics?.recoveryByFailureType || []} layout="vertical">
+              <BarChart data={chartFailureTypes} layout="vertical">
                 <XAxis type="number" stroke="#6e7681" fontSize={11} domain={[0, 100]} />
                 <YAxis dataKey="category" type="category" stroke="#6e7681" fontSize={10} width={110} />
                 <Tooltip
@@ -327,7 +342,7 @@ export default function DashboardPage() {
                   }}
                 />
                 <Bar dataKey="recoveryRate" fill="#6366F1" radius={[0, 4, 4, 0]}>
-                  {(analytics?.recoveryByFailureType || []).map((entry, index) => (
+                  {chartFailureTypes.map((entry, index) => (
                     <Cell
                       key={`cell-${index}`}
                       fill={entry.recoveryRate > 70 ? "#10B981" : entry.recoveryRate > 40 ? "#F59E0B" : "#F43F5E"}
