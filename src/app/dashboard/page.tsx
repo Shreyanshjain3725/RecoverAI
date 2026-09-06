@@ -168,10 +168,10 @@ export default function DashboardPage() {
   ];
 
   const chartFailureTypes = analytics?.recoveryByFailureType?.length ? analytics.recoveryByFailureType : [
-    { category: "Timeout", recoveryRate: 85 },
-    { category: "Auth Failed", recoveryRate: 62 },
-    { category: "Ins. Funds", recoveryRate: 38 },
-    { category: "Fraud Risk", recoveryRate: 12 },
+    { category: "Timeout", recoveryRate: 85, totalAtRisk: 10000, recovered: 8500 },
+    { category: "Auth Failed", recoveryRate: 62, totalAtRisk: 5000, recovered: 3100 },
+    { category: "Ins. Funds", recoveryRate: 38, totalAtRisk: 2500, recovered: 950 },
+    { category: "Fraud Risk", recoveryRate: 12, totalAtRisk: 1250, recovered: 150 },
   ];
 
   return (
