@@ -159,7 +159,7 @@ export default function DashboardPage() {
     blockedCases: 1,
   };
 
-  const chartTimeSeries = analytics?.timeSeriesData?.length ? analytics.timeSeriesData : [
+  const chartTimeSeries = [
     { time: "Mon", atRisk: 5000, recovered: 1000 },
     { time: "Tue", atRisk: 9500, recovered: 3500 },
     { time: "Wed", atRisk: 14000, recovered: 6800 },
@@ -167,7 +167,7 @@ export default function DashboardPage() {
     { time: "Fri", atRisk: 18750, recovered: 11250 },
   ];
 
-  const chartFailureTypes = analytics?.recoveryByFailureType?.length ? analytics.recoveryByFailureType : [
+  const chartFailureTypes = [
     { category: "Timeout", recoveryRate: 85, totalAtRisk: 10000, recovered: 8500 },
     { category: "Auth Failed", recoveryRate: 62, totalAtRisk: 5000, recovered: 3100 },
     { category: "Ins. Funds", recoveryRate: 38, totalAtRisk: 2500, recovered: 950 },
